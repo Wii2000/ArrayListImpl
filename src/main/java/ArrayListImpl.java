@@ -1,5 +1,6 @@
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 
 /**
  * Custom implementation of ArrayList with limited functionality.
@@ -76,9 +77,9 @@ public class ArrayListImpl<E> {
     /**
      * Returns the element at the specified position in this list.
      *
-     * @param index index of the element to return
+     * @param index the index of the element to return
      * @return the element at the specified position in this list
-     * @throws IndexOutOfBoundsException
+     * @throws IndexOutOfBoundsException if the index out of bounds
      */
     public E get(int index) {
         rangeCheck(index);
@@ -92,7 +93,7 @@ public class ArrayListImpl<E> {
      *
      * @param index the index of the element to be removed
      * @return the element that was removed from the list
-     * @throws IndexOutOfBoundsException
+     * @throws IndexOutOfBoundsException if the index out of bounds
      */
     public E remove(int index) {
         rangeCheck(index);
@@ -106,6 +107,60 @@ public class ArrayListImpl<E> {
         elementData[--size] = null; // clear to let GC do its work
 
         return oldValue;
+    }
+
+    /**
+     * Sort elements into ascending order, using quicksort algorithm.
+     */
+    @SuppressWarnings("unchecked")
+    public void quickSort(Comparator<? super E> comparator) {
+        sort((E[]) elementData, 0, size - 1, comparator);
+    }
+
+    private void sort(E[] arr, int from, int to, Comparator<? super E> comparator) {
+        if (from < to) {
+            int divideIndex = partition(arr, from, to, comparator);
+            sort(arr, from, divideIndex - 1, comparator);
+            sort(arr, divideIndex, to, comparator);
+        }
+    }
+
+    /**
+     * Take element from the middle of the array as a pivot,
+     * place all elements, that smaller than pivot to the left of pivot
+     * and all greater elements to the right of pivot.
+     */
+    private int partition(E[] arr, int from, int to, Comparator<? super E> comparator) {
+        int leftIndex = from;
+        int rightIndex = to;
+
+        E pivot = arr[from + (to - from) / 2];
+
+        while (leftIndex <= rightIndex) {
+
+            while (comparator.compare(arr[leftIndex], pivot) < 0) {
+                leftIndex++;
+            }
+
+            while (comparator.compare(arr[rightIndex], pivot) > 0) {
+                rightIndex--;
+            }
+
+            if (leftIndex <= rightIndex) {
+                swap(arr, rightIndex, leftIndex);
+                leftIndex++;
+                rightIndex--;
+            }
+
+        }
+
+        return leftIndex;
+    }
+
+    private void swap(E[] arr, int index1, int index2) {
+        E tmp = arr[index1];
+        arr[index1] = arr[index2];
+        arr[index2] = tmp;
     }
 
     /**
@@ -123,7 +178,7 @@ public class ArrayListImpl<E> {
      * ({@code "[]"}).  Adjacent elements are separated by the characters
      * {@code ", "} (comma and space).
      *
-     * @return a string representation of this collection
+     * @return a string representation of this list
      */
     public String toString() {
         if (size == 0) {
@@ -136,7 +191,7 @@ public class ArrayListImpl<E> {
             if (i != 0) {
                 sb.append(", ");
             }
-            sb.append(get(i));
+            sb.append(elementData[i]);
         }
         return sb.append("]").toString();
     }
